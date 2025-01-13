@@ -5,7 +5,7 @@ namespace ElevatorSystem.Domain.Model;
 public class Elevator : IElevator
 {
     public int Id { get; }
-    public int CurrentFloor { get; private set; }
+    public int CurrentFloor { get; set; }
     public bool IsMoving { get; private set; }
     public string Direction { get; private set; } = "idle";
     public List<int> Requests { get; private set; } = new();
@@ -67,7 +67,7 @@ public class Elevator : IElevator
         }
     }
 
-    private void UpdateDirection()
+    public void UpdateDirection()
     {
         if (Requests.Count == 0)
         {

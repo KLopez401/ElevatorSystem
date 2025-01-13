@@ -45,6 +45,13 @@ public class ElevatorService : IElevatorService
         await Task.WhenAll(elevatorTasks);
     }
 
+    public IElevator AssignRequestToElevator(int floor)
+    {
+        return _elevators
+            .OrderBy(e => Math.Abs(e.CurrentFloor - floor))
+            .ThenBy(e => e.IsMoving ? 1 : 0)
+            .First();
+    }
     private List<int> ParseFloorRequests(string? input)
     {
         try
@@ -59,13 +66,5 @@ public class ElevatorService : IElevatorService
             Console.WriteLine("Invalid input. Please enter valid floor numbers separated by commas.");
             return new List<int>();
         }
-    }
-
-    private IElevator AssignRequestToElevator(int floor)
-    {
-        return _elevators
-            .OrderBy(e => Math.Abs(e.CurrentFloor - floor))
-            .ThenBy(e => e.IsMoving ? 1 : 0)
-            .First();
     }
 }
