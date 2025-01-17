@@ -26,9 +26,22 @@ public class Program
 
         var system = new ElevatorService(elevators);
 
-        var inputTask = system.HandleUserInput(cts.Token);
+        var requestTask = system.HandleRequests(GetUserRequest, cts.Token);
         var elevatorTask = system.RunElevators(cts.Token);
 
-        await Task.WhenAny(inputTask, elevatorTask);
+        await Task.WhenAny(requestTask, elevatorTask);
+    }
+
+    private static async Task<(int floor, string direction)> GetUserRequest()
+    {
+        Console.WriteLine("Enter floor and direction (e.g., '3 up' or '5 down'):");
+        var input = Console.ReadLine()?.Split(' ');
+        if (input != null && input.Length == 2 && int.TryParse(input[0], out var floor))
+        {
+            return (floor, input[1]);
+        }
+
+        Console.WriteLine("Invalid input. Please try again.");
+        return await GetUserRequest();
     }
 }

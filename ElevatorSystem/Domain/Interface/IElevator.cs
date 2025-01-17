@@ -4,10 +4,11 @@ public interface IElevator
 {
     int Id { get; }
     int CurrentFloor { get; }
-    bool IsMoving { get; }
+    List<int> UpRequests { get; }
+    List<int> DownRequests { get; }
     string Direction { get; }
-    List<int> Requests { get; }
+    bool IsMoving { get; }
 
-    void AddRequest(int floor);
+    void AddRequest(int floor, string direction);
     Task RunAsync(CancellationToken cancellationToken);
 }

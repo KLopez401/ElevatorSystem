@@ -11,30 +11,22 @@ public class ElevatorService : IElevatorService
     {
         _elevators = elevators;
     }
-    public async Task HandleUserInput(CancellationToken cancellationToken)
+    public async Task HandleRequests(Func<Task<(int floor, string direction)>> requestGenerator, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                Console.WriteLine("Enter floor requests separated by commas (e.g., 3,5,7):");
-                var input = Console.ReadLine();
-                var floorRequests = ParseFloorRequests(input);
+                var (floor, direction) = await requestGenerator();
 
-                if (floorRequests.Count > 0)
-                {
-                    foreach (var floor in floorRequests)
-                    {
-                        var elevator = AssignRequestToElevator(floor);
-                        elevator.AddRequest(floor);
-                    }
-                }
+                var elevator = AssignRequestToElevator(floor, direction);
+                elevator.AddRequest(floor, direction);
 
-                await Task.Delay(500);
+                await Task.Delay(500, cancellationToken); 
             }
-            catch
+            catch (Exception ex)
             {
-                Console.WriteLine("Error processing input. Please try again.");
+                Console.WriteLine($"Error: {ex.Message}");
             }
         }
     }
@@ -45,26 +37,11 @@ public class ElevatorService : IElevatorService
         await Task.WhenAll(elevatorTasks);
     }
 
-    public IElevator AssignRequestToElevator(int floor)
+    public IElevator AssignRequestToElevator(int floor, string direction)
     {
         return _elevators
             .OrderBy(e => Math.Abs(e.CurrentFloor - floor))
             .ThenBy(e => e.IsMoving ? 1 : 0)
             .First();
-    }
-    private List<int> ParseFloorRequests(string? input)
-    {
-        try
-        {
-            return input?.Split(',')
-                .Select(f => int.Parse(f.Trim()))
-                .Where(f => f >= 1 && f <= 10)
-                .ToList() ?? new List<int>();
-        }
-        catch
-        {
-            Console.WriteLine("Invalid input. Please enter valid floor numbers separated by commas.");
-            return new List<int>();
-        }
     }
 }
