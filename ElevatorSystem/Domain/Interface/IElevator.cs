@@ -11,4 +11,6 @@ public interface IElevator
 
     void AddRequest(int floor, string direction);
     Task RunAsync(CancellationToken cancellationToken);
+    Task ProcessRequests(List<int> requests, CancellationToken cancellationToken);
+    Task MoveToFloor(int targetFloor, CancellationToken cancellationToken);
 }

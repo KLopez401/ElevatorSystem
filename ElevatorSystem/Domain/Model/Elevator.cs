@@ -4,6 +4,7 @@ namespace ElevatorSystem.Domain.Model;
 
 public class Elevator : IElevator
 {
+    public Elevator() { }
     public int Id { get; }
     public int CurrentFloor { get; private set; }
     public List<int> UpRequests { get; private set; } = new();
@@ -14,7 +15,7 @@ public class Elevator : IElevator
     public Elevator(int id)
     {
         Id = id;
-        CurrentFloor = 1; 
+        CurrentFloor = 1;
     }
 
     public void AddRequest(int floor, string direction)
@@ -42,28 +43,30 @@ public class Elevator : IElevator
             if (UpRequests.Count == 0 && DownRequests.Count == 0)
             {
                 Direction = "idle";
-                await Task.Delay(1000, cancellationToken); 
+                await Task.Delay(1000, cancellationToken);
                 continue;
             }
 
             IsMoving = true;
 
-            if (Direction == "up")
+            if (Direction == "up" && UpRequests.Count > 0)
             {
                 await ProcessRequests(UpRequests, cancellationToken);
-
-                Direction = DownRequests.Count > 0 ? "down" : "idle";
             }
-            else if (Direction == "down")
+
+            if (Direction == "down" && DownRequests.Count > 0)
             {
                 await ProcessRequests(DownRequests, cancellationToken);
+            }
 
-                Direction = UpRequests.Count > 0 ? "up" : "idle";
+            if (UpRequests.Count == 0 && DownRequests.Count == 0)
+            {
+                Direction = "idle"; 
             }
         }
     }
 
-    private async Task ProcessRequests(List<int> requests, CancellationToken cancellationToken)
+    public async Task ProcessRequests(List<int> requests, CancellationToken cancellationToken)
     {
         while (requests.Count > 0)
         {
@@ -74,20 +77,20 @@ public class Elevator : IElevator
         }
     }
 
-    private async Task MoveToFloor(int targetFloor, CancellationToken cancellationToken)
+    public virtual async Task MoveToFloor(int targetFloor, CancellationToken cancellationToken)
     {
         while (CurrentFloor != targetFloor && !cancellationToken.IsCancellationRequested)
         {
             CurrentFloor += CurrentFloor < targetFloor ? 1 : -1;
             Console.WriteLine($"Elevator {Id}: Moving to floor {CurrentFloor}...");
-            await Task.Delay(10000, cancellationToken); 
+            await Task.Delay(10000, cancellationToken);
         }
 
         Console.WriteLine($"Elevator {Id}: Stopped at floor {CurrentFloor}.");
         await Task.Delay(10000, cancellationToken);
     }
 
-    public void UpdateDirection()
+    private void UpdateDirection()
     {
         if (Direction == "idle")
         {
